@@ -74,27 +74,37 @@ class TableModel {
        reservations = reservations ?? [];
 
   bool isAvailable(DateTime date, String timeSlot, {String? currentUserId}) {
-    // Check if there's any reservation for this date and time slot
-    bool isBooked = reservations.any((reservation) =>
-        reservation.date == date && 
-        reservation.timeSlot == timeSlot);
-        
-    // If there's no booking, it's available
-    if (!isBooked) return true;
+    // Normalize the date to ignore time component for comparison
+    final normalizedDate = DateTime(date.year, date.month, date.day);
     
-    // If there is a booking, check if it's by the current user
-    if (currentUserId != null) {
-      bool isBookedByCurrentUser = reservations.any((reservation) =>
-          reservation.date == date && 
-          reservation.timeSlot == timeSlot &&
-          reservation.userId == currentUserId);
-          
-      // If it's booked by the current user, it's not available (prevent duplicate bookings)
-      if (isBookedByCurrentUser) return false;
+    // Check all reservations for this table
+    for (final reservation in reservations) {
+      // Skip cancelled reservations
+      if (reservation.isCancelled == true) continue;
+      
+      // Normalize reservation date for comparison
+      final normalizedReservationDate = DateTime(
+        reservation.date.year,
+        reservation.date.month,
+        reservation.date.day,
+      );
+      
+      // Check if date and time slot match
+      if (normalizedReservationDate == normalizedDate && 
+          reservation.timeSlot == timeSlot) {
+        
+        // If it's the current user's reservation, it's not available (prevent duplicate bookings)
+        if (currentUserId != null && reservation.userId == currentUserId) {
+          return false;
+        }
+        
+        // It's booked by someone else
+        return false;
+      }
     }
     
-    // Otherwise, it's booked by someone else
-    return !isBooked;
+    // No conflicting reservations found
+    return true;
   }
 
   Map<String, dynamic> toMap() {

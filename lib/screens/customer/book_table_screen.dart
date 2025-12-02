@@ -172,6 +172,8 @@ class _BookTableScreenState extends State<BookTableScreen> {
     
     final availableTables = _getAvailableTables();
     final allTables = _restaurant.tables;
+    final authService = context.read<AuthService>();
+    final currentUserId = authService.currentUser?.id;
     
     if (allTables.isEmpty) {
       return const Padding(
@@ -180,13 +182,27 @@ class _BookTableScreenState extends State<BookTableScreen> {
       );
     }
     
+    // Sort tables by number for consistent display
+    allTables.sort((a, b) => a.number.compareTo(b.number));
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text(
-          'Available Tables (${availableTables.length} of ${allTables.length} available)',
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          children: [
+            Text(
+              'Available Tables • ',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              '${availableTables.length} of ${allTables.length} available',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.green[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         GridView.builder(
@@ -195,73 +211,112 @@ class _BookTableScreenState extends State<BookTableScreen> {
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             childAspectRatio: 1.0,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 12.0,
+            mainAxisSpacing: 12.0,
           ),
           itemCount: allTables.length,
           itemBuilder: (context, index) {
             final table = allTables[index];
-            final isSelected = _selectedTableId == table.id;
-            final isAvailable = availableTables.any((t) => t.id == table.id);
+            final isAvailable = availableTables.contains(table);
+            final isBookedByCurrentUser = !isAvailable && 
+                table.reservations.any((r) => 
+                    r.userId == currentUserId && 
+                    r.timeSlot == _selectedTimeSlot &&
+                    r.date.year == _selectedDate.year &&
+                    r.date.month == _selectedDate.month &&
+                    r.date.day == _selectedDate.day);
             
             return GestureDetector(
-              onTap: isAvailable ? () {
-                setState(() {
-                  _selectedTableId = isSelected ? null : table.id;
-                });
-              } : null,
-              child: Opacity(
-                opacity: isAvailable ? 1.0 : 0.5,
+              onTap: isAvailable
+                  ? () {
+                      setState(() {
+                        _selectedTableId = table.id;
+                      });
+                    }
+                  : null,
+              child: Tooltip(
+                message: isBookedByCurrentUser 
+                    ? 'You have already booked this table' 
+                    : !isAvailable ? 'This table is already booked' : 'Table ${table.number} (${table.maxSeats} seats)',
                 child: Container(
                   decoration: BoxDecoration(
-                    color: !isAvailable 
-                        ? Colors.grey[200]
-                        : isSelected 
-                            ? Theme.of(context).primaryColor.withOpacity(0.2)
-                            : Colors.grey[200],
-                    border: Border.all(
-                      color: !isAvailable 
-                          ? Colors.grey[400]!
-                          : isSelected 
-                              ? Theme.of(context).primaryColor 
-                              : Colors.grey[300]!,
-                      width: isSelected ? 2.0 : 1.0,
-                      style: !isAvailable ? BorderStyle.none : BorderStyle.solid,
-                    ),
+                    color: _selectedTableId == table.id
+                        ? Theme.of(context).primaryColor
+                        : isAvailable
+                            ? Colors.green[50]
+                            : isBookedByCurrentUser
+                                ? Colors.orange[300]
+                                : Colors.grey[400],
                     borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(
+                      color: _selectedTableId == table.id
+                          ? Theme.of(context).primaryColor
+                          : isBookedByCurrentUser
+                              ? Colors.orange[700] ?? Colors.orange
+                              : Colors.transparent,
+                      width: _selectedTableId == table.id || isBookedByCurrentUser ? 2.0 : 1.0,
+                    ),
+                    boxShadow: [
+                      if (_selectedTableId == table.id || isBookedByCurrentUser)
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                    ],
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Table ${table.number}',
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: !isAvailable 
-                              ? Colors.grey[600]
-                              : isSelected 
-                                  ? Theme.of(context).primaryColor 
-                                  : Colors.black,
-                          decoration: !isAvailable ? TextDecoration.lineThrough : null,
-                        ),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.table_restaurant,
+                            size: 32,
+                            color: _selectedTableId == table.id
+                                ? Colors.white
+                                : isBookedByCurrentUser
+                                    ? Colors.white
+                                    : isAvailable
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.white,
+                          ),
+                          if (isBookedByCurrentUser)
+                            const Positioned(
+                              top: 0,
+                              right: 4,
+                              child: Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${table.maxSeats} ${table.maxSeats == 1 ? 'seat' : 'seats'}',
+                        'Table ${table.number}',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: !isAvailable 
-                              ? Colors.grey[500] 
-                              : Colors.grey[600],
+                          color: _selectedTableId == table.id
+                              ? Colors.white
+                              : isBookedByCurrentUser
+                                  ? Colors.white
+                                  : isAvailable
+                                      ? Colors.black87
+                                      : Colors.white,
+                          fontWeight: _selectedTableId == table.id || isBookedByCurrentUser
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                       if (!isAvailable) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          'Booked',
+                          isBookedByCurrentUser ? 'Your Booking' : 'Booked',
                           style: TextStyle(
+                            color: Colors.white,
                             fontSize: 10,
-                            color: Colors.red[700],
                             fontWeight: FontWeight.bold,
                           ),
                         ),
