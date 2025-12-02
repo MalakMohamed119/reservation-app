@@ -114,7 +114,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
               },
               tooltip: 'Manage Categories',
             ),
-            // 🔹 Replaced Refresh button with Add Restaurant button
+            // Add Restaurant button
             IconButton(
               icon: const Icon(Icons.add, color: primaryBlack),
               onPressed: () {

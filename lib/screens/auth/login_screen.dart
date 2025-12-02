@@ -262,11 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: primaryBlack,
                       decoration: TextDecoration.underline)),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
-        Column(
-          children: [
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -290,6 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: const Text('Back to Role Selection',
                   style: TextStyle(color: primaryBlack)),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ],

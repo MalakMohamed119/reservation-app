@@ -278,23 +278,13 @@ class _BookedTablesScreenState extends State<BookedTablesScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Time: ${reservation.timeSlot}', style: const TextStyle(color: lightGray)), // ⭐️ UI CHANGE: Light gray text
+                Text('Time: ${reservation.timeSlot}', style: const TextStyle(color: lightGray)),
                 Text('Guests: ${reservation.numberOfPeople}', style: const TextStyle(color: lightGray)),
                 Text(
                   'Booked on: ${DateFormat('MMM d, y - h:mm a').format(reservation.createdAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: mediumGray, fontStyle: FontStyle.italic),
                 ),
               ],
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.notifications_active, color: actionBlue), // ⭐️ UI CHANGE: Subtle action blue
-              onPressed: () {
-                // TODO: Implement notification for this reservation
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notification sent to customer')),
-                );
-              },
-              tooltip: 'Notify Customer',
             ),
           ),
         );
