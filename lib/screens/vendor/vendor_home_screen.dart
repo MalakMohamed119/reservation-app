@@ -36,14 +36,28 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
 
     try {
       final restaurantService = Provider.of<RestaurantService>(context, listen: false);
+      // Force refresh from the service
+      await restaurantService.loadRestaurants();
       final restaurants = restaurantService.getAllRestaurants();
-      setState(() {
-        _restaurants = restaurants;
-      });
+      if (mounted) {
+        setState(() {
+          _restaurants = restaurants;
+        });
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Restaurants refreshed successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load restaurants: $e')),
+          SnackBar(
+            content: Text('Failed to refresh restaurants: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     } finally {
@@ -74,6 +88,20 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
             onPressed: () => Navigator.pushReplacementNamed(context, '/role-selection'),
           ),
           actions: [
+            IconButton(
+              icon: _isLoading 
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryBlack,
+                      ),
+                    )
+                  : const Icon(Icons.refresh, color: primaryBlack),
+              onPressed: _isLoading ? null : _loadRestaurants,
+              tooltip: 'Refresh restaurants',
+            ),
             IconButton(
               icon: const Icon(Icons.category, color: primaryBlack),
               onPressed: () {
