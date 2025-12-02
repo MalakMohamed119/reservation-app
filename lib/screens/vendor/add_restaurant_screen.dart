@@ -1317,18 +1317,16 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
 
   bool _validateTimeFormat(String time) {
     final timeRegex = RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]\s*([aApP][mM])?\s*$');
-    if (!timeRegex.hasMatch(time)) return false;
-
-    if (_timeSlots.contains(time)) {
+    if (!timeRegex.hasMatch(time)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This time slot is already added'), duration: Duration(seconds: 2)),
+        const SnackBar(content: Text('Please enter a valid time format (HH:MM AM/PM)'), duration: Duration(seconds: 2)),
       );
       return false;
     }
 
-    if (_timeSlots.length >= 5) {
+    if (_timeSlots.contains(time)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum of 5 time slots allowed'), duration: Duration(seconds: 2)),
+        const SnackBar(content: Text('This time slot is already added'), duration: Duration(seconds: 2)),
       );
       return false;
     }
@@ -1428,9 +1426,9 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
       return;
     }
 
-    if (_timeSlots.isEmpty) {
+    if (_timeSlots.length != 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one time slot')),
+        SnackBar(content: Text('Please add exactly 5 time slots (${_timeSlots.length}/5)')),
       );
       return;
     }
