@@ -129,20 +129,16 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Use Future.microtask to ensure the context is fully built before reading the service
-    // This resolves the common 'setState during build' warning when provider is used in initState
-    Future.microtask(() => _loadRestaurants());
+    _loadRestaurants();
+    _testNotification();
   }
 
   // Method to test notification
   Future<void> _testNotification() async {
-    final notificationService = NotificationService();
-    
     try {
-      // Print the device's FCM token
+      final notificationService = Provider.of<NotificationService>(context, listen: false);
       await notificationService.printFcmToken();
       
-      // Show a snackbar to confirm the test notification was sent
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
