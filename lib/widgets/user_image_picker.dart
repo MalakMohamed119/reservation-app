@@ -16,7 +16,6 @@ class UserImagePicker extends StatefulWidget {
 
 class _UserImagePickerState extends State<UserImagePicker> {
   XFile? _pickedImage;
-  String? _base64ImageString;
 
   void _pickImage() async {
     FocusScope.of(context).unfocus();
@@ -32,7 +31,6 @@ class _UserImagePickerState extends State<UserImagePicker> {
       // If the user cancels picking an image, clear the old one
       setState(() {
         _pickedImage = null;
-        _base64ImageString = null;
       });
       widget.imagePickFn(null); // Pass null back
       return;
@@ -48,9 +46,8 @@ class _UserImagePickerState extends State<UserImagePicker> {
     // 4. Update the state for local preview and callback
     setState(() {
       _pickedImage = pickedImageFile;
-      _base64ImageString = encodedImage;
     });
-    
+
     // 5. Pass the Base64 string back to the parent widget for saving
     widget.imagePickFn(encodedImage);
   }
@@ -79,7 +76,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
         TextButton.icon(
           onPressed: _pickImage,
           icon: Icon(
-            Icons.image, 
+            Icons.image,
             color: Theme.of(context).primaryColor,
           ),
           label: Text(
