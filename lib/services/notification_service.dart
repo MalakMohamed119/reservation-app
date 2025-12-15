@@ -1,29 +1,12 @@
+
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import '../repo/notification_repository.dart';
 
 class NotificationService {
     final FirebaseMessaging _messaging = FirebaseMessaging.instance;
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-    final NotificationRepository _repository;
-
-    static NotificationService? _instance;
-    
-    // Private constructor
-    NotificationService._internal({required NotificationRepository repository}) 
-        : _repository = repository;
-    
-    // Factory constructor to return the same instance
-    factory NotificationService({required NotificationRepository repository}) {
-      _instance ??= NotificationService._internal(repository: repository);
-      return _instance!;
-    }
-    
-    // Static method to set the repository (for initialization before getting instance)
-    static void setNotificationRepository(NotificationRepository repository) {
-      _instance ??= NotificationService._internal(repository: repository);
-    }
 
     static const String VENDOR_COLLECTION = 'vendorNotifications';
     static const String USER_TOKENS_COLLECTION = 'userFcmTokens';
